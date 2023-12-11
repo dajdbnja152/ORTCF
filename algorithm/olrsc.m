@@ -1,0 +1,24 @@
+function [L,S] = olrsc(Z,d,lambda1,lambda2,lambda3_base) 
+[p,n] = size(Z);
+M = zeros(p, d);
+A = zeros(d, d);
+B = zeros(p, d);
+U = zeros(n, d);
+V = zeros(n, d);
+D = randn(p, d);
+S = zeros(p,n);
+for t=1:n
+     z = Z(:, t);
+     lambda3 = sqrt(t) * lambda3_base;
+     [v, e] = OLRR_solve_ve(z, D, lambda1, lambda2);
+     normz = norm(z);
+     u = (D - M)' * z / (normz * normz + 1/lambda3);
+     M = M + z * u';
+     A = A + v * v';
+     B = B + (z-e) * v';   
+     D = OLRR_solve_D(D, M, A, B, lambda1, lambda3);
+     U(t, :) = u';
+     V(t, :) = v';
+     S(:, t) = e;
+end
+L = D * V';
